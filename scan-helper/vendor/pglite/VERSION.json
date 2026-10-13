@@ -1,0 +1,27 @@
+{
+  "package": "@electric-sql/pglite",
+  "version": "0.5.8",
+  "source": "https://registry.npmjs.org/@electric-sql/pglite/-/pglite-0.5.8.tgz",
+  "integrity": "sha512-n9tsbUOhwx2epK1V0ZG9Ar4SHWUju04dhmzZXiSBXwBoleOvIfals33NAaWgagQVAL4Rbvx/Ptsu3P+pA09f6Q==",
+  "files": {
+    "chunk-2BOC2OMW.js": "518217918b120059f84abfd5da2548c208cb232ed8fa45c330c7c358c472e185",
+    "chunk-DDJLRBDX.js": "09cdee35c53b92a6498c3f1ece5fe2d71063b637ea0036f808c08f7b11024393",
+    "chunk-F4GETNPB.js": "5ab11fd9fd74b259484f42a7855cd9569a5fe6ee1cf3c032238ac43a59511d97",
+    "chunk-JDT7TZ73.js": "ccc0c2ea7269c23559d23cd86e0d12b3a35beb6d420253790890ecd7d08e1852",
+    "chunk-NNS5RQRF.js": "e04c14da71c248d5e7e02f45df665b8e2b136526ee0bef419274bb2b345a1017",
+    "chunk-QY3QWFKW.js": "bff6d3144dd6ea2689b00d9d0eea1ea2267b9cc14505fb9107b6194c1832bdea",
+    "chunk-RYDTTX3G.js": "a929aa141dccfb2f412b0fbee3a1e5b4aab3b228f89d2131ac24f73ad1136a90",
+    "fs/base.js": "8a840f204b540dac65a703fe71516ea73abfe9a1bbfb5e6b15864e0d22858063",
+    "fs/nodefs.js": "7ffd7c0550fcf16ad7f5b3c1fc0e259ab0c213dc7c4f47188dd43d442fe14011",
+    "fs/opfs-ahp.js": "73de23a9f88d3dccb8abeb9ff689b7c03511b5736945146dd7797563f198ed8c",
+    "index.js": "388fa6f88cfa02adda63b2f05853d310dec9a42fc0b91b0a78927f97d4bc5964",
+    "initdb.js": "6852f5292d9528c7aa2093a853236f0ba2ee6777b9d43a10f17b04ef22886194",
+    "initdb.wasm": "4c8988dca3b2f0bbfd23a0714023e4822a2909ead01804f37acffd9ff3ca9f8a",
+    "LICENSE": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9",
+    "package.json": "ccdf8de44295f59be00f6b8cf1359959938a16a4ccf8c55940d8af1894748c5f",
+    "pglite.data": "c574cc331d96e33311470ec57bf58c579d972c111dbd9c0ab54bb42d79ec4c0d",
+    "pglite.js": "d7db324430326d0a2189a4aa10a11214fd0c92fdbf0df5781bb57f947b491707",
+    "pglite.wasm": "356b89f6fcb2ab3a397bec4128327b67b7137ec2a900b13251dade81bcbc0ef0",
+    "templating.js": "99508ccae5c9848d45b22d714a75649c5f8121840cf8000fda10000e3eaad767"
+  }
+}

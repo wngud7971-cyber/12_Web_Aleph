@@ -1,0 +1,1921 @@
+<!doctype html>
+<html lang="ko">
+
+
+
+<head>
+
+
+
+  <meta charset="utf-8">
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+
+  <meta name="description" content="DB를 배우는 학생이 인덱스·순차 스캔의 반복 측정값을 비교하고 실습 보고서를 만드는 스캔랩.">
+
+
+
+  <title>스캔랩 · 인덱스가 정말 더 빠를까?</title>
+
+
+
+  <link rel="stylesheet" href="style.css">
+
+
+
+  <script defer src="paper-data.js"></script><script defer src="model.js"></script><script defer src="practice.js"></script><script defer src="csv.js"></script><script defer src="csv-stream.js"></script><script defer src="sql-export.js"></script><script defer src="sql-tools.js"></script><script defer src="engine-core.js"></script><script defer src="insights.js"></script><script defer src="history.js"></script><script defer src="history-ui.js"></script><script defer src="flow.js"></script><script defer src="app.js"></script><script defer src="engine-ui.js"></script><script defer src="csv-ui.js"></script><script defer src="cost-ui.js"></script>
+
+
+
+<script src="guide-ui.js" defer></script>
+
+
+</head>
+
+
+
+<body>
+
+
+
+  <header class="top"><a class="brand" href="./index.html"><span class="brand-mark" aria-hidden="true">≋</span> 스캔랩 <span class="brand-sub">SCAN LAB</span></a><nav><a href="./paper.html">논문 읽기 ↗</a><a href="https://12-web-aleph.vercel.app/#work" id="portfolio-link">포트폴리오 ↗</a></nav></header>
+
+
+
+  <main>
+
+
+
+    <section class="intro" id="start" tabindex="-1">
+
+
+
+      <p class="eyebrow">DB를 배우는 학생을 위한 스캔랩</p>
+
+
+
+      <h1>내 CSV에서 찾기,<br><em>인덱스가 더 빠를까요?</em>
+
+
+</h1>
+
+
+
+      <p class="purpose">이 앱은 DB를 배우는 학생이 CSV에서 원하는 행을 찾을 때, 인덱스가 얼마나 도움이 되는지 직접 측정하고 이해하도록 돕습니다. DB 설치 없이 사용해요.</p>
+
+
+
+      <ol class="journey" aria-label="앱 사용 순서">
+
+
+<li>
+
+
+<b>1</b><span>표를 고르고</span>
+
+
+</li>
+
+
+<li>
+
+
+<b>2</b><span>찾을 값을 정하면</span>
+
+
+</li>
+
+
+<li>
+
+
+<b>3</b><span>두 방법의 시간을 비교해요</span>
+
+
+</li>
+
+
+</ol>
+
+
+<div class="entry-grid">
+
+
+
+        <div class="entry-card recommended">
+
+
+<span class="tag">처음이라면 여기부터 · DB 설치 없음</span><h2>예시로 직접 측정</h2>
+
+
+<p>준비된 가상 주문 표에서 서울 주문을 찾고, 두 방법의 실제 시간을 재요. 파일 준비는 필요 없어요.</p>
+
+
+<button class="primary" id="start-live-demo" type="button">예시로 먼저 체험하기 →</button>
+
+
+</div>
+
+
+
+        <div class="entry-card">
+
+
+<span class="tag">내 CSV 전체로 측정 · DB 설치 없음</span><h2>내 데이터로 실제 실험</h2>
+
+
+<p>내 표에서 찾을 항목과 값을 고르세요. 앱이 시간을 측정하고 결과를 보여 줘요.</p>
+
+
+<button class="secondary" id="start-csv" type="button">내 CSV로 측정하기 →</button>
+
+
+</div>
+
+
+
+      </div>
+
+
+
+      <div class="everyday-example">
+
+
+<b>예를 들어</b><p>주문 목록에서 <strong>지역이 서울인 주문</strong>을 찾는다고 생각해 보세요. 표 전체를 차례로 읽는 방법과, 인덱스를 이용하는 방법 중 어느 쪽이 빠른지 확인합니다.</p>
+
+
+</div>
+
+
+<details class="terms-guide"><summary>순차 스캔과 인덱스 스캔이 뭔가요?</summary><div class="plain-methods">
+
+
+<div>
+
+
+<b>순차 스캔</b><p>표를 처음부터 차례로 살펴봐요.</p>
+
+
+</div>
+
+
+<div>
+
+
+<b>인덱스 스캔</b><p>인덱스에서 위치를 찾아 해당 행을 읽어요.</p>
+
+
+</div>
+
+
+</div>
+
+
+
+      </details><p class="paper-title">기반 논문 · <a href="./paper.html">선택도에 따른 인덱스 스캔과 순차 스캔의 성능 비교</a></p>
+
+
+
+      <p id="local-launch-note" class="external-step" hidden>다운로드한 앱은 압축을 모두 풀고 <strong>실행.cmd</strong>를 눌러 열어 주세요. DB 설치는 필요 없습니다.</p>
+
+
+
+      <p class="helper">측정 결과는 이번 데이터와 브라우저 환경에 한정돼요.</p>
+
+
+
+      <details class="more-options"><summary>논문 결과 · 가상 예시 · 외부 DB 실습</summary><div class="other-actions">
+
+
+<button class="chip" id="start-demo" type="button">가상 시간으로 결과 읽기 연습</button><button class="chip" id="start-paper" type="button">논문에서 측정한 결과 보기</button><button class="chip" id="start-practice" type="button">외부 PostgreSQL용 큰 예시 SQL 만들기</button><button class="chip" id="start-compare" type="button">이미 있는 측정값 비교하기</button>
+
+
+</div></details>
+
+
+
+    </section>
+
+
+
+    <div id="flow-nav" class="flow-nav" hidden>
+
+
+<button type="button" class="text-button" id="flow-home">← 시작 화면</button><p id="flow-heading" tabindex="-1"></p>
+
+
+<ol id="flow-steps" class="flow-steps" hidden>
+
+
+<li><button type="button" data-flow-step="1">1. 데이터와 조건 선택</button></li>
+
+
+<li><button type="button" data-flow-step="2" disabled>2. 앱에서 측정</button></li>
+
+
+<li><button type="button" data-flow-step="3" disabled>3. 결과 비교</button></li>
+
+
+</ol>
+
+
+<p id="flow-message" class="helper" role="status"></p>
+
+
+</div>
+
+
+
+    <section id="demo-guide" class="demo-guide" hidden aria-labelledby="demo-title">
+
+
+
+      <span class="tag">체험용 가상 실행 시간 · 실제 CSV 측정 결과가 아니에요</span>
+
+
+
+      <h2 id="demo-title">이 앱은 이런 비교 결과를 보여 줘요.</h2>
+
+
+
+      <p>같은 조회를 두 방법으로 10번씩 실행했다고 가정한 예시예요.<br><strong>평균 시간이 짧은지</strong>와 <strong>매번 시간이 얼마나 달라지는지</strong>를 함께 비교해요.</p>
+
+
+
+      <div class="demo-options" role="group" aria-label="체험할 상황">
+
+
+<button type="button" class="chip" data-demo="clear" aria-pressed="false">① 인덱스가 빠른 경우</button><button type="button" class="chip" data-demo="unclear" aria-pressed="false">② 차이가 애매한 경우</button><button type="button" class="chip" data-demo="seq" aria-pressed="false">③ 순차 스캔이 빠른 경우</button>
+
+
+</div>
+
+
+
+      <p class="helper">아래에서 결과를 읽고 ‘보고서 저장’을 눌러 보세요. 이 예시로 내 PC나 내 CSV의 성능을 예측할 수는 없어요.</p>
+
+
+
+      <button type="button" id="demo-show-input" class="text-button" aria-expanded="false" aria-controls="measure">예시에 사용한 시간 보기 ↓</button>
+
+
+
+      <button type="button" id="demo-to-csv" class="text-button">이제 내 데이터로 실험하기 →</button>
+
+
+
+    </section>
+
+
+
+    <section class="lab-section" id="csv-lab" aria-labelledby="csv-title" hidden>
+
+
+
+      <div id="csv-data-panel">
+
+
+
+      <div class="section-heading">
+
+
+<div>
+
+
+<p class="eyebrow">1단계 · 데이터와 찾을 조건</p>
+
+
+<h2 id="csv-title">표를 고르고, 찾을 값을 정하세요.</h2>
+
+
+</div>
+
+
+<p>CSV는 엑셀처럼 행과 열로 된 표예요.<br>파일이 없으면 예시 표를 사용하세요.</p>
+
+
+</div>
+
+
+
+      <div class="panel csv-import">
+
+
+<label for="csv-file">공개·예시 CSV 파일 선택<input type="file" id="csv-file" accept=".csv,.tsv,text/csv,text/tab-separated-values"></label><button class="secondary" id="csv-sample" type="button">파일 없이 예시 표 사용</button><details class="csv-read-settings"><summary>파일 형식·읽기 설정</summary><label for="csv-delimiter">구분자<select id="csv-delimiter"><option value="auto">자동 확인</option>
+
+
+<option value=",">쉼표</option>
+
+
+<option value="tab">탭</option>
+
+
+<option value=";">세미콜론</option></select></label><p class="helper">UTF-8 · 첫 줄은 열 제목 · 최대 500MiB / 100만 행 / 30열. 큰 파일도 전체를 읽고, 미리보기에는 첫 5행만 표시해요.</p></details><p class="helper csv-privacy">공개·예시 CSV를 선택하세요. 파일은 내 브라우저에서 처리하며 서버로 보내지 않아요.</p>
+
+
+</div>
+
+
+
+      <div id="csv-read-progress" class="file-progress" hidden>
+
+
+<label for="csv-progress">파일 확인 진행률</label><progress id="csv-progress" max="100" value="0"></progress><span id="csv-progress-text" role="status"></span><button id="csv-cancel" type="button" class="secondary">읽기 취소</button>
+
+
+</div>
+
+
+
+      <p id="csv-error" class="error" role="alert"></p>
+
+
+<p id="csv-status" class="helper" role="status">파일이 없다면 예시 CSV로 먼저 실습할 수 있어요.</p>
+
+
+
+      <div id="csv-workspace" hidden>
+
+
+
+        <div class="practice-grid csv-experiment">
+
+
+
+          <form id="csv-form" class="panel lookup-form" novalidate>
+
+
+<div class="lookup-fields">
+
+
+<label for="csv-column">1. 어느 열에서 찾을까요?<select id="csv-column"></select></label><label for="csv-common-value">2. 어떤 값을 찾을까요?<select id="csv-common-value"></select></label>
+
+
+</div>
+
+
+<details class="advanced-input"><summary>값 직접 입력 · 빈 값 조회 · 반복 횟수</summary><label for="csv-target">조회할 값<input id="csv-target" type="text" maxlength="4000" autocomplete="off"></label><label class="checkbox-label"><input id="csv-null" type="checkbox">빈 값(NULL)을 조회</label><label for="csv-repeats">방식별 반복<select id="csv-repeats"><option value="5">5회</option>
+
+
+<option value="10" selected>10회</option>
+
+
+<option value="30">30회</option></select></label></details><p class="helper">예: 지역에서 서울을 고르면 ‘지역이 서울인 행’을 찾아요.</p>
+
+
+<div class="selection-card">
+
+
+<h3 id="csv-summary">이번에 찾을 행</h3>
+
+
+<p id="csv-query-summary" role="status" aria-live="polite" aria-atomic="true">표를 선택하고 찾을 항목과 값을 골라 주세요.</p>
+
+
+</div>
+
+
+<button type="submit" class="primary">3. 시간 측정하고 비교하기 →</button><p class="helper">선택한 표 전체로 두 방법을 실행해요. 결과는 자동으로 표시됩니다.</p>
+
+
+<details><summary>내 PostgreSQL에서 직접 실행하고 싶어요</summary><p>일반 PostgreSQL 환경에서 측정할 때만 사용합니다.</p>
+
+
+<button id="csv-manual-start" type="button" class="secondary">외부 DB용 SQL 만들기 →</button></details><details class="input-notes"><summary>자동으로 확인한 자료형·값 목록</summary><p id="csv-warning" class="helper"></p></details>
+
+
+</form>
+
+
+
+          </div>
+
+
+
+      <details><summary>선택한 표 확인하기 · 첫 5행</summary><div class="record-table-scroll"><table class="record-table">
+
+
+<thead id="csv-preview-head"></thead>
+
+
+<tbody id="csv-preview-body"></tbody>
+
+
+</table></div></details>
+
+
+
+        <details class="csv-schema"><summary>필요할 때 · 열의 자료형 확인·수정</summary><div class="record-table-scroll"><table class="record-table">
+
+
+<thead><tr>
+
+
+<th scope="col">원래 컬럼 제목</th>
+
+
+<th scope="col">SQL 컬럼</th>
+
+
+<th scope="col">자료형</th>
+
+
+<th scope="col">빈 값 수</th>
+
+
+</tr></thead>
+
+
+<tbody id="csv-schema-body"></tbody>
+
+
+</table></div>
+
+
+<p class="helper">001 같은 앞자리 0은 TEXT로 보존합니다. 숫자·문자 혼합 컬럼도 TEXT입니다. INTEGER·NUMERIC은 숫자형, TEXT는 문자열형입니다. 빈 칸은 NULL, 큰따옴표로 감싼 빈 문자열은 문자열로 유지합니다.</p></details>
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+      <div id="csv-run-panel" hidden>
+
+
+
+        <div id="csv-browser-panel">
+
+
+
+          <div class="section-heading"><div>
+
+
+<p class="eyebrow">2단계 · 앱에서 실제 실행 중</p>
+
+
+<h2>같은 데이터를 두 방법으로 찾고 있어요.</h2>
+
+
+</div></div>
+
+
+
+          <p id="browser-experiment" class="external-step"></p>
+
+
+
+          <div class="file-progress">
+
+
+<label for="browser-progress">데이터 준비와 측정 진행률</label><progress id="browser-progress" max="100" value="0"></progress><span id="browser-status" role="status" aria-live="polite"></span><button id="browser-cancel" type="button" class="secondary">측정 취소</button>
+
+
+</div>
+
+
+
+          <p class="helper">CSV 전체 가져오기 → 인덱스 준비 → 각 방식 준비 실행 1회 → 번갈아 반복 측정 → 자동 비교 순서입니다. 브라우저 탭을 열어 두세요. 진행률은 준비·측정 단계 기준이며 남은 시간을 뜻하지 않습니다.</p>
+
+
+
+          <p id="browser-error" class="error" role="alert"></p>
+
+
+<details><summary>오류 상세 확인</summary><pre id="browser-error-detail"></pre></details><button id="browser-back" class="primary" type="button" hidden>데이터 선택으로 돌아가기</button>
+
+
+
+        </div>
+
+
+
+        <div id="csv-manual-panel" hidden>
+
+
+
+        <div class="section-heading"><div>
+
+
+<p class="eyebrow">2단계 · 이 단계는 PostgreSQL에서 진행해요</p>
+
+
+<h2 id="csv-run-title">SQL을 복사해 DB에서 실행하세요.</h2>
+
+
+</div></div>
+
+
+
+        <div id="csv-standard-run">
+
+
+
+        <div class="external-step">
+
+
+<b>이 경로는 내 PostgreSQL에서 직접 측정합니다.</b><p>학습용 PostgreSQL에 연결된 쿼리 창을 열고, 아래 세 코드를 순서대로 실행하세요. 세 단계는 <strong>같은 연결·같은 쿼리 창</strong>에서 진행하고 중간에 연결을 닫지 마세요.</p>
+
+
+</div>
+
+
+
+        <ol class="run-instructions">
+
+
+<li>
+
+
+<b>준비:</b> 예시 표와 인덱스를 DB에 만들어요.</li>
+
+
+<li>
+
+
+<b>측정:</b> 두 방법을 여러 번 실행해 시간을 기록해요.</li>
+
+
+<li>
+
+
+<b>결과:</b> 기록한 두 결과를 복사할 수 있는 형태로 꺼내요.</li>
+
+
+</ol>
+
+
+
+        </div>
+
+
+
+        <p id="csv-run-summary" class="helper"></p>
+
+
+
+        <div id="csv-import-note" class="external-step" hidden>
+
+
+<h3>큰 CSV는 psql에서 원본 파일을 가져와요.</h3>
+
+
+<ol>
+
+
+<li>아래 버튼으로 선택한 원본을 <strong>scanlab-input.csv</strong>라는 이름으로 저장하세요. 내용을 바꾸지 않고 같은 파일을 저장합니다.</li>
+
+
+<li>‘내 실험 SQL 저장’을 눌러 <strong>scanlab-my-csv-experiment.sql</strong>을 같은 폴더에 저장하세요.</li>
+
+
+<li>그 폴더의 터미널에서 아래 명령의 DB사용자·학습DB를 자신의 값으로 바꿔 실행하세요. psql은 PostgreSQL의 명령 실행 도구입니다.</li>
+
+
+</ol>
+
+
+<pre>psql -X -U DB사용자 -d 학습DB -f scanlab-my-csv-experiment.sql</pre>
+
+
+<p>준비 → 측정 → 결과를 한 연결에서 실행하고, 같은 폴더에 <strong>scanlab-seq.json</strong>과 <strong>scanlab-index.json</strong>을 저장합니다. 같은 이름의 이전 결과 파일이 있으면 덮어씁니다. 이 대용량 SQL은 pgAdmin의 일반 SQL 창에서 그대로 실행할 수 없습니다.</p>
+
+
+<button id="csv-data-download" class="secondary" type="button">DB에서 가져올 CSV 저장 ↓</button>
+
+
+</div>
+
+
+
+        <div class="sql-toolbar">
+
+
+<div id="csv-sql-tabs" class="sql-tabs" role="group" aria-label="CSV 실험 SQL 보기">
+
+
+<button type="button" class="chip active" data-csv-sql="setup" aria-pressed="true">1. 준비</button><button type="button" class="chip" data-csv-sql="measure" aria-pressed="false">2. 측정</button><button type="button" class="chip" data-csv-sql="results" aria-pressed="false">3. 결과</button>
+
+
+</div>
+
+
+<button type="button" id="csv-download" class="secondary" disabled>내 실험 SQL 저장 ↓</button>
+
+
+</div>
+
+
+
+        <p id="csv-run-hint" class="run-hint" role="status">먼저 ‘준비’ 코드를 실행하세요. 완료되면 ‘2. 측정’을 누르세요.</p>
+
+
+
+        <button id="csv-copy-sql" class="secondary" type="button">현재 단계 SQL 복사</button><p id="csv-copy-feedback" class="feedback" role="status"></p>
+
+
+
+        <details id="csv-sql-details" open><summary id="csv-sql-label">현재 단계에서 실행할 SQL</summary><pre id="csv-sql" tabindex="0"></pre></details>
+
+
+
+        <div class="next-step-card">
+
+
+<h3>DB에서 두 결과가 나왔나요?</h3>
+
+
+<p id="csv-next-description">‘다음’을 눌러 입력 화면을 열어 두세요. DB의 첫 SELECT에서 <strong>seq_json</strong> 셀 전체를 복사해 왼쪽 칸에 넣고, 두 번째 SELECT의 <strong>index_json</strong>을 복사해 오른쪽 칸에 넣으세요.</p>
+
+
+<button type="button" id="csv-use" class="primary" disabled>다음: 실행한 결과 붙여 넣기 →</button><p id="csv-feedback" class="feedback" role="status"></p>
+
+
+</div>
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+      <details><summary>측정 환경과 데이터 확인</summary><p>앱에서 측정하면 브라우저 내 PostgreSQL(PGlite)의 임시 메모리 DB를 사용합니다. CSV 전체 행을 나눠 가져오며 원본을 복제하지 않습니다. 가져오기와 인덱스 준비 시간은 스캔 시간에 포함하지 않습니다. 준비 실행 각 1회를 제외하고 순차·일반 인덱스 스캔을 번갈아 실행합니다.</p>
+
+
+<p>결과는 이번 데이터와 브라우저 환경에 한정됩니다. 논문의 일반 PostgreSQL 환경을 재현하거나 운영 서버 성능을 예측하지 않습니다. PC·브라우저·배경 부하·캐시 상태에 따라 달라질 수 있습니다. 일반 PostgreSQL에서 확인하려면 고급 설정의 외부 DB용 SQL을 사용하세요.</p>
+
+
+<p>동등 비교(=)와 NULL 조회, INTEGER·NUMERIC·TEXT를 지원합니다. 실제 개인정보 대신 공개·예시 CSV를 선택하세요. 입력 파일과 DB는 측정 작업의 메모리에만 존재하며 서버로 전송하거나 브라우저 저장소에 남기지 않습니다.</p></details>
+
+
+
+    </section>
+
+
+
+    <section class="lab-section" id="prepare" aria-labelledby="prepare-title" hidden>
+
+
+
+      <div class="section-heading">
+
+
+<div>
+
+
+<p class="eyebrow">OPTION / 생성한 예시 실습</p>
+
+
+<h2 id="prepare-title">만들어진 예시로도 실험해요.</h2>
+
+
+</div>
+
+
+<p>예시 데이터와 측정 SQL을 받아<br>내 PostgreSQL에서 실행하세요.</p>
+
+
+</div>
+
+
+
+      <div class="practice-grid">
+
+
+
+        <form id="practice-form" class="panel" novalidate>
+
+
+
+          <label for="practice-type">실험할 데이터 구조</label><select id="practice-type"><option value="wide" selected>컬럼 수와 자료형을 정한 예시 표</option>
+
+
+<option value="record">혼합 표본 · 한 행에 숫자 + 문자열 + 기호 컬럼</option>
+
+
+<option value="mixed">혼합 값 · 한 TEXT 컬럼 안에 여러 내용</option>
+
+
+<option value="integer">정수 · 100 / 250</option>
+
+
+<option value="text">문자열 · 서울 / 부산</option>
+
+
+<option value="symbols">기호 포함 문자열 · A-100#_! / B+200@/.</option></select>
+
+
+
+          <div id="practice-wide-settings">
+
+
+<label for="practice-column-count">전체 컬럼 수 · 최대 30개<input id="practice-column-count" type="number" min="3" max="30" step="1" value="6"></label><label for="practice-wide-column">어느 컬럼에서 값을 찾을까요?<select id="practice-wide-column"></select></label><details><summary>각 컬럼의 자료형 바꾸기</summary><div id="practice-wide-types" class="wide-types"></div></details><p class="helper">표 전체에 선택한 개수만큼 컬럼을 만듭니다. 기본은 정수·문자열·기호 포함 문자열을 번갈아 배치해요. SQL을 실행하기 전에는 실제 표를 만들지 않습니다.</p>
+
+
+</div>
+
+
+
+          <label for="practice-column" id="practice-record-column">어느 컬럼을 조회할까요?<select id="practice-column"><option value="number">수량 · INTEGER</option>
+
+
+<option value="text">지역 · TEXT</option>
+
+
+<option value="code">상품 코드 · TEXT</option>
+
+
+<option value="mark">표시 기호 · TEXT</option></select></label>
+
+
+
+          <div class="practice-value-grid">
+
+
+<label for="practice-target">조회할 값<input id="practice-target" type="text" value="100" maxlength="160" autocomplete="off"></label><label for="practice-other" id="practice-other-single">나머지 행의 값<input id="practice-other" type="text" value="250" maxlength="160" autocomplete="off"></label>
+
+
+</div>
+
+
+
+          <label for="practice-values-list" id="practice-mixed-list" hidden>같은 컬럼에 섞을 예시 값 · 한 줄에 하나<textarea id="practice-values-list" maxlength="4000" spellcheck="false">100
+
+
+
+서울
+
+
+
+A-100#_!
+
+
+
+250
+
+
+
+부산
+
+
+
+B+200@/.</textarea></label>
+
+
+
+          <p id="practice-type-note" class="helper"></p>
+
+
+
+          <div class="practice-options">
+
+
+<label for="practice-total">전체 행 수 · 최대 100만<select id="practice-total"><option value="10000">1만 행</option>
+
+
+<option value="100000" selected>10만 행</option>
+
+
+<option value="1000000">100만 행</option></select></label><label for="practice-percent">선택도 (%)<input id="practice-percent" type="text" inputmode="decimal" value="10" maxlength="12"></label><label for="practice-repeats">방식별 반복<select id="practice-repeats"><option value="5">5회</option>
+
+
+<option value="10" selected>10회</option>
+
+
+<option value="30">30회</option></select></label>
+
+
+</div>
+
+
+
+          <p id="practice-error" class="error" role="alert"></p>
+
+
+
+          <button class="primary" type="submit">실습 SQL 만들기 →</button>
+
+
+
+          <p class="helper">조회 행은 전체에 섞어 배치하고, 비교할 두 방식에는 같은 데이터를 사용합니다. 혼합 목록은 3~20개이며 줄 앞뒤 공백을 제거하고 중복을 합칩니다. 실제 개인정보 대신 예시 값을 넣으세요.</p>
+
+
+
+        </form>
+
+
+
+        <div class="panel practice-preview">
+
+
+<span class="tag">논문의 방법을 적용한 확장 실습</span><h3 id="practice-summary"></h3>
+
+
+<p id="practice-values"></p>
+
+
+<div id="practice-record-preview">
+
+
+<div class="record-table-scroll"><table class="record-table">
+
+
+<caption>한 표본의 구성 · 두 대표 행 예시</caption>
+
+
+<thead id="practice-preview-head"><tr>
+
+
+<th scope="col">수량<br><small>INTEGER</small>
+
+
+</th>
+
+
+<th scope="col">지역<br><small>TEXT</small>
+
+
+</th>
+
+
+<th scope="col">상품 코드<br><small>TEXT</small>
+
+
+</th>
+
+
+<th scope="col">표시<br><small>TEXT</small>
+
+
+</th>
+
+
+</tr></thead>
+
+
+<tbody id="practice-record-rows"></tbody>
+
+
+</table></div>
+
+
+<p class="helper">정수 컬럼은 INTEGER, 문자열·기호 컬럼은 TEXT로 저장합니다. 대표 행은 값의 구성 예시이며 실제 행 순서를 나타내지 않습니다.</p>
+
+
+</div>
+
+
+<ol>
+
+
+<li>
+
+
+<b>준비 SQL</b>로 임시 데이터와 인덱스를 만듭니다.</li>
+
+
+<li>
+
+
+<b>측정 SQL</b>로 두 방식을 번갈아 반복 측정합니다.</li>
+
+
+<li>
+
+
+<b>결과 SQL</b>에서 JSON을 복사해 아래에 붙여 넣습니다.</li>
+
+
+</ol>
+
+
+<p class="helper">논문은 정수형 0·1 컬럼을 실험했습니다. 여기서 만든 데이터의 성능은 직접 측정해야 하며 논문의 결과를 그대로 예측에 쓰지 않습니다.</p>
+
+
+<p class="helper" id="practice-structure-note"></p>
+
+
+<button id="use-practice" class="secondary" type="button">이 실습 조건을 비교에 연결 ↓</button><p id="practice-use-feedback" class="feedback" role="status"></p>
+
+
+</div>
+
+
+
+      </div>
+
+
+
+      <div class="sql-toolbar">
+
+
+<div class="sql-tabs" role="group" aria-label="생성 SQL 보기">
+
+
+<button type="button" class="chip active" data-sql="setup" aria-pressed="true">1. 준비</button><button type="button" class="chip" data-sql="measure" aria-pressed="false">2. 측정</button><button type="button" class="chip" data-sql="results" aria-pressed="false">3. 결과</button>
+
+
+</div>
+
+
+<button type="button" id="download-sql" class="secondary">전체 SQL 저장 ↓</button>
+
+
+</div>
+
+
+
+      <details id="sql-details"><summary>선택한 SQL 펼쳐 보기</summary><pre id="practice-sql"></pre></details>
+
+
+
+      <p id="practice-sql-state" class="helper" role="status"></p>
+
+
+
+      <details><summary>처음 실행한다면 이 순서로 해 보세요.</summary><ol>
+
+
+<li>학습용 PostgreSQL에 연결해 준비 SQL을 실행하세요. 실제 행 수와 조회 비율이 표시됩니다.</li>
+
+
+<li>
+
+
+<strong>같은 연결</strong>에서 측정 SQL을 실행하세요. 각 방식 1회 준비 실행은 제외하고, 선택한 횟수의 결과를 저장합니다.</li>
+
+
+<li>결과 SQL의 첫 SELECT를 실행해 <code>seq_json</code> 셀의 JSON 전체를 복사하세요. 두 번째 SELECT의 <code>index_json</code>도 복사하세요. 표 머리글이나 CSV 따옴표를 붙이지 말고 셀 값만 넣으세요.</li>
+
+
+<li>아래의 두 측정값 칸에 붙여 넣고, 실험 조건과 실제 스캔 방식 확인을 표시한 뒤 비교하세요.</li>
+
+
+</ol>
+
+
+<p>이 앱은 SQL을 생성하며 DB에 직접 연결하거나 쿼리를 실행하지 않습니다. 임시 테이블은 연결을 닫으면 사라집니다. 다시 측정하면 현재 연결의 이전 실습 측정값을 교체합니다. 설정으로 스캔 방식을 유도하더라도 실제 계획을 확인해야 합니다.</p>
+
+
+<p>문자열은 UTF-8 환경과 C 정렬 규칙으로 실습합니다. = 비교이므로 %, _도 패턴이 아닌 문자 자체로 조회합니다. 문자열 길이·저장 크기·정렬 규칙이 함께 달라질 수 있어 유형 간 시간 차이를 기호 하나의 효과로 단정하지 마세요. <a href="https://www.postgresql.org/docs/18/datatype-character.html" target="_blank" rel="noopener noreferrer">문자열 공식 문서 ↗</a> · <a href="https://www.postgresql.org/docs/18/runtime-config-query.html" target="_blank" rel="noopener noreferrer">실행 계획 설정 ↗</a></p></details>
+
+
+
+    </section>
+
+
+
+    <section class="lab-section" id="explore" aria-labelledby="explore-title" hidden>
+
+
+
+      <div class="section-heading">
+
+
+<div>
+
+
+<p class="eyebrow">REFERENCE / 논문 결과</p>
+
+
+<h2 id="explore-title">예상과 결과를 비교해 봐요.</h2>
+
+
+</div>
+
+
+<p>선택도는 전체 행 중<br>조건에 맞는 행의 비율이에요.</p>
+
+
+</div>
+
+
+
+      <div class="explore-grid">
+
+
+
+        <div class="panel controls">
+
+
+
+          <label for="paper-case">어떤 실험을 볼까요?</label>
+
+
+
+          <select id="paper-case"></select>
+
+
+
+          <p id="row-count" class="helper"></p>
+
+
+
+          <fieldset>
+
+
+<legend>측정 전, 어떤 방식이 더 빠를 것 같나요?</legend>
+
+
+<div class="prediction-options">
+
+
+<label><input type="radio" name="prediction" value="index"> 인덱스</label><label><input type="radio" name="prediction" value="seq"> 순차 스캔</label><label><input type="radio" name="prediction" value="unclear" checked> 아직 모르겠어요</label>
+
+
+</div>
+
+
+</fieldset>
+
+
+
+          <button class="primary" id="compare-prediction" type="button">내 예상과 비교</button>
+
+
+
+          <p id="prediction-feedback" class="feedback" role="status"></p>
+
+
+
+          <p class="helper">처음이라면 1% → 80% → 100% 순서로 바꿔 보세요.</p>
+
+
+
+        </div>
+
+
+
+        <div class="panel paper-result" aria-live="polite">
+
+
+
+          <div class="result-top">
+
+
+<span id="paper-source" class="tag"></span><span class="unit">평균 실행 시간 · ms</span>
+
+
+</div>
+
+
+
+          <div class="bar-row">
+
+
+<div class="bar-label">순차 스캔 <span id="paper-seq-value"></span>
+
+
+</div>
+
+
+<div class="bar-track"><div id="paper-seq-bar" class="bar seq"></div></div>
+
+
+</div>
+
+
+
+          <div class="bar-row">
+
+
+<div class="bar-label">일반 인덱스 <span id="paper-index-value"></span>
+
+
+</div>
+
+
+<div class="bar-track"><div id="paper-index-bar" class="bar idx"></div></div>
+
+
+</div>
+
+
+
+          <div class="paper-verdict">
+
+
+<span class="eyebrow">논문의 판정</span><h3 id="paper-verdict"></h3>
+
+
+<p id="paper-explanation"></p>
+
+
+</div>
+
+
+
+          <p class="helper" id="paper-variation"></p>
+
+
+
+        </div>
+
+
+
+      </div>
+
+
+
+      <div class="insight">
+
+
+<b>선택도 하나로 결론을 내리지 않아요.</b><p>이 논문의 로컬 실험에서는 100%까지 평균 성능 역전이 없었고, 80%는 추가 측정에서도 우위를 확정하지 못했어요. 테이블 팽창과 읽기 블록이 많은 별도 실행에서는 순차 스캔이 더 빨랐어요. 환경이 달라지면 결과도 달라질 수 있어요.</p>
+
+
+</div>
+
+
+
+      <details><summary>이 숫자는 어디에서 왔나요?</summary><p>논문 표 3의 15개 구간과 표 6의 80% 추가 측정에서 옮긴 공개 요약 통계입니다. 각 실행은 따로 보여 주며 서로 합치지 않습니다. 표의 평균·표준편차는 반올림된 값이므로, 논문에 기록된 판정을 표시합니다.</p>
+
+
+<p>PostgreSQL 18.6 · 100만 행 · 로컬 환경 · 병렬 실행/JIT 끔. 실측된 범위의 결과이며 다른 환경의 예상 실행 시간이 아닙니다.</p></details>
+
+
+
+    </section>
+
+
+
+    <section class="lab-section" id="measure" aria-labelledby="measure-title" hidden>
+
+
+
+      <div class="section-heading">
+
+
+<div>
+
+
+<p class="eyebrow">측정값 비교</p>
+
+
+<h2 id="measure-title">두 방식의 실행 결과를 넣어 주세요.</h2>
+
+
+</div>
+
+
+<p>각 방식의 실행 시간(ms)을<br>2회 이상 넣으면 비교할 수 있어요.</p>
+
+
+</div>
+
+
+
+      <p id="measurement-guidance" class="external-step">실행 시간 숫자 또는 실행 계획 결과를 넣으면 두 방식을 비교해요.</p>
+
+
+
+      <div class="sample-toolbar" id="sample-toolbar">
+
+
+<span>DB가 없어도 바로 실습</span><button type="button" class="chip" data-sample="clear">차이가 뚜렷한 예시</button><button type="button" class="chip" data-sample="unclear">차이가 불분명한 예시</button><button type="button" class="chip" data-sample="seq">순차 스캔이 빠른 예시</button><button type="button" class="chip" data-sample="json">실행 계획 JSON 예시</button>
+
+
+</div>
+
+
+
+      <p class="helper" id="sample-note">예시는 학습용으로 만든 가상 데이터이며 논문의 원자료가 아닙니다.</p>
+
+
+
+      <form id="measure-form" novalidate>
+
+
+
+        <div class="input-grid">
+
+
+
+          <div class="panel input-panel">
+
+
+<label for="seq-input">순차 스캔 결과 <span>seq_json 또는 시간(ms)</span></label><textarea id="seq-input" aria-describedby="input-help seq-error" spellcheck="false" placeholder="예: 50, 52, 49, 51, 50" maxlength="200000"></textarea><label class="json-file-label">결과 JSON 파일 선택<input type="file" id="seq-json-file" accept=".json,application/json"></label><p id="seq-error" class="error" role="alert"></p>
+
+
+</div>
+
+
+
+          <div class="panel input-panel">
+
+
+<label for="index-input">인덱스 스캔 결과 <span>index_json 또는 시간(ms)</span></label><textarea id="index-input" aria-describedby="input-help index-error" spellcheck="false" placeholder="예: 20, 21, 19, 20, 20" maxlength="200000"></textarea><label class="json-file-label">결과 JSON 파일 선택<input type="file" id="index-json-file" accept=".json,application/json"></label><p id="index-error" class="error" role="alert"></p>
+
+
+</div>
+
+
+
+        </div>
+
+
+
+        <p class="helper" id="input-help">숫자는 쉼표·공백·줄바꿈으로 구분하세요. PostgreSQL 실행 계획 JSON도 넣을 수 있어요. 각 방식 2~500회, 0~1,000,000,000ms까지 지원합니다.</p>
+
+
+
+        <details id="measurement-options"><summary>실험 정보 확인 · 환경 메모</summary><div class="measurement-meta"><div>
+
+
+<label for="experiment-type">실험한 데이터 구조 <span>(선택)</span><select id="experiment-type"><option value="unspecified">미지정</option>
+
+
+<option value="csv">내 CSV 데이터</option>
+
+
+<option value="wide">컬럼 수를 정한 예시 표</option>
+
+
+<option value="record">혼합 표본 (한 행에 여러 자료형)</option>
+
+
+<option value="mixed">혼합 값 (한 컬럼 TEXT)</option>
+
+
+<option value="integer">정수</option>
+
+
+<option value="text">문자열</option>
+
+
+<option value="symbols">기호 포함 문자열</option></select></label><label for="comparison-column" id="comparison-column-label" hidden>혼합 표본의 조회 컬럼<select id="comparison-column"><option value="unspecified">미지정</option>
+
+
+<option value="number">수량 · INTEGER</option>
+
+
+<option value="text">지역 · TEXT</option>
+
+
+<option value="code">상품 코드 · TEXT</option>
+
+
+<option value="mark">표시 기호 · TEXT</option></select></label><label for="selectivity">내 실험의 선택도 <span>(선택)</span><input id="selectivity" type="text" inputmode="decimal" placeholder="예: 80"><span class="helper">0~100% · 판정식의 입력은 아닙니다.</span></label>
+
+
+</div></div>
+
+
+
+        <label class="environment-label" for="environment-note">실행 환경 메모 <span>(선택)</span><textarea id="environment-note" maxlength="500" placeholder="예: 학습용 노트북, RAM 16GB, SSD, 전원 연결"></textarea></label></details><label class="checkbox-label"><input id="conditions" type="checkbox"> 같은 데이터·쿼리·환경에서 측정했고, 각 실행 계획이 해당 방식인지 확인했어요.</label>
+
+
+
+        <p id="meta-error" class="error" role="alert"></p>
+
+
+
+        <div class="form-actions">
+
+
+<button class="primary" type="submit">측정값 비교하기 <span aria-hidden="true">→</span></button><button class="text-button" id="clear-input" type="button">입력 비우기</button><span class="helper">입력은 서버로 전송하지 않습니다.</span>
+
+
+</div>
+
+
+
+      </form>
+
+
+
+      <details class="guide"><summary>내 PostgreSQL에서 측정하는 방법</summary><p>학습용 DB의 동일한 SELECT 쿼리를 두 방식으로 실행하고, 실행 계획의 스캔 노드가 실제로 바뀌었는지 확인하세요. 아래는 직접 실행하는 형식 예시입니다. 테이블과 조건을 내 실습에 맞게 바꾸세요.</p>
+
+
+<pre><code>EXPLAIN (ANALYZE, BUFFERS, TIMING OFF, FORMAT JSON)
+
+
+
+SELECT * FROM practice_table WHERE sample_flag = 1;</code></pre>
+
+
+<p>각 방식으로 여러 번 측정해 실행 시간 또는 JSON 결과를 넣으세요. 여러 JSON 결과는 한 배열에 넣거나 줄바꿈으로 이어 붙일 수 있습니다. 실행 순서를 번갈아 섞고, 캐시·부하·테이블 상태를 같게 유지하세요. 방식별 10회는 논문의 기본 반복 횟수이며 이 앱의 최소 입력은 2회입니다.</p>
+
+
+<p>JSON은 최상위 <code>Execution Time</code>과 스캔 노드를 읽습니다. Seq Scan / Index Scan 한 종류만 있고 대상 스캔 노드가 하나인 결과만 비교합니다. 병렬 실행·조인·비트맵·인덱스 온리 스캔은 이 비교 범위에 포함하지 않습니다. 버퍼 값은 최상위 Plan 값만 사용해 중복 합산을 피합니다.</p>
+
+
+<p>ANALYZE는 쿼리를 실제로 실행합니다. 학습용 SELECT를 사용하세요. 실행 시간은 서버 실행 시간이며 화면 표시까지의 전체 응답 시간이 아닙니다. <a href="https://www.postgresql.org/docs/18/sql-explain.html" target="_blank" rel="noopener noreferrer">PostgreSQL 공식 문서 ↗</a></p></details>
+
+
+
+    </section>
+
+
+
+    <section class="lab-section report-section" id="report" aria-labelledby="report-title" hidden>
+
+
+
+      <div class="section-heading">
+
+
+<div>
+
+
+<p class="eyebrow">비교 결과</p>
+
+
+<h2 id="report-title">어느 방법이 더 빨랐을까요?</h2>
+
+
+</div>
+
+
+<button id="download-report" type="button" class="secondary" disabled>보고서 저장 ↓</button>
+
+
+</div>
+
+
+
+      <div id="empty-result" class="empty-result">
+
+
+<span aria-hidden="true">↗</span><p>위에서 예시를 선택하고 ‘측정값 비교하기’를 눌러 보세요.<br>판정과 계산 근거가 여기에 나타납니다.</p>
+
+
+</div>
+
+
+
+      <div id="analysis-result" hidden aria-live="polite">
+
+
+
+        <div class="verdict-box">
+
+
+<span class="tag" id="result-tag">논문의 방법으로 계산</span><h3 id="result-verdict"></h3>
+
+
+<p id="result-summary"></p>
+
+
+<p id="result-warning" class="result-warning"></p>
+
+
+</div>
+
+
+
+        <p class="result-reading">숫자가 작을수록 조회 시간이 짧아요. <b>‘우위 불분명’</b>은 반복 실행의 변동까지 고려하면 어느 쪽이 빠른지 확정하기 어렵다는 뜻이에요.</p>
+
+
+<div class="stat-grid">
+
+
+<div class="stat">
+
+
+<span>순차 스캔 평균</span><strong id="seq-mean"></strong><small id="seq-stats"></small>
+
+
+</div>
+
+
+<div class="stat">
+
+
+<span>일반 인덱스 평균</span><strong id="index-mean"></strong><small id="index-stats"></small>
+
+
+</div>
+
+
+</div>
+
+
+<div class="result-actions" id="result-actions" hidden>
+
+
+<p>다음에는 무엇을 해 볼까요?</p>
+
+
+<div>
+
+
+<button type="button" class="primary" id="result-again">찾을 값을 바꿔 다시 측정 →</button><button type="button" class="secondary" id="result-history">누적 기록·그래프 보기</button><button type="button" class="text-button" id="result-sql">SQL 가져가기</button>
+
+
+</div>
+
+
+<small>보고서 저장 버튼으로 이번 결과를 보관할 수 있어요.</small>
+
+
+</div>
+
+
+<details class="calculation-details"><summary>차이가 충분한지 판단한 계산 근거 보기</summary><p class="helper" id="metadata-note"></p>
+
+
+<div class="stat-grid">
+
+
+<div class="stat">
+
+
+<span>평균 차이 D</span><strong id="difference"></strong><small>순차 평균 − 인덱스 평균</small>
+
+
+</div>
+
+
+<div class="stat">
+
+
+<span>판정 경계 2SE</span><strong id="threshold"></strong><small>변동과 반복 횟수를 반영</small>
+
+
+</div>
+
+
+</div>
+
+
+
+        <div class="report-grid">
+
+
+<div class="panel">
+
+
+<h3>다음 실습에서 할 일</h3>
+
+
+<ul id="next-actions"></ul>
+
+
+<p id="buffer-note" class="helper"></p>
+
+
+</div>
+
+
+<div class="panel">
+
+
+<h3>계산 방법</h3>
+
+
+<p class="formula">D = 순차 평균 − 인덱스 평균<br>SE = √(s²순차 / n순차 + s²인덱스 / n인덱스)</p>
+
+
+<p>D &gt; 2SE → 인덱스 우위<br>D &lt; −2SE → 순차 스캔 우위<br>그 외 → 우위 불분명</p>
+
+
+<p class="helper">s는 표본 표준편차입니다. 논문의 탐색적 판정 기준을 사용하며, 정식 유의성 검정이나 95% 신뢰구간을 의미하지 않습니다.</p>
+
+
+</div>
+
+
+</div>
+
+
+
+        </details><p class="helper">표시값은 반올림한 값입니다. 판정에는 반올림 전 계산값을 사용합니다.</p>
+
+
+
+        <div id="index-cost" class="index-cost" hidden aria-labelledby="cost-title">
+
+
+
+          <details id="cost-disclosure" class="optional-panel"><summary>인덱스 생성 비용 · 몇 번 조회하면 이득일까요?</summary><div class="optional-content">
+
+
+<p class="eyebrow">인덱스는 만드는 데에도 비용이 들어요</p>
+
+
+<h3 id="cost-title">몇 번 조회해야 만드는 시간을 회수할까요?</h3>
+
+
+
+          <div class="stat-grid">
+
+
+<div class="stat">
+
+
+<span>이번 인덱스 생성 시간 · 1회</span><strong id="cost-build"></strong><small>CSV 가져오기·ANALYZE는 제외</small>
+
+
+</div>
+
+
+<div class="stat">
+
+
+<span>이번 인덱스 저장 공간</span><strong id="cost-size"></strong><small>브라우저 DB 내부 크기 · 다운로드 크기와 달라요</small>
+
+
+</div>
+
+
+</div>
+
+
+
+          <p id="cost-table" class="helper"></p>
+
+
+<p id="cost-saving"></p>
+
+
+<p id="cost-break-even" class="cost-conclusion"></p>
+
+
+
+          <label for="cost-count">같은 조건으로 몇 번 조회한다고 가정할까요?<input id="cost-count" type="text" inputmode="numeric" value="100" maxlength="10"></label><p id="cost-error" class="error" role="alert"></p>
+
+
+<p id="cost-projection" role="status"></p>
+
+
+
+          <details class="technical-note"><summary>회수 횟수의 계산 방법과 범위</summary><p class="helper">회수 횟수 = 생성 시간 ÷ (순차 평균 − 인덱스 평균), 소수점 올림. 인덱스 우위가 불분명하거나 절약 시간이 없으면 회수 횟수를 제시하지 않아요. 생성 시간은 Worker에서 CREATE INDEX 요청부터 완료까지의 경과 시간이고, 조회 시간은 PostgreSQL Execution Time이므로 합계는 단순 참고 계산입니다. 동일 조회와 시간 차이가 계속 유지된다고 가정하며, 데이터 수정에 따른 유지 비용·CSV 가져오기·통계 준비·통신·화면 표시 시간은 포함하지 않습니다. 논문에서 검증한 회수 기준이나 다른 서버의 예측값이 아닙니다.</p>
+
+
+
+        </details>
+
+
+</div></details>
+
+
+</div>
+
+
+
+        <details><summary>실습 보고서 미리보기</summary><pre id="report-preview"></pre></details>
+
+
+
+      <button id="browser-inputs-toggle" class="text-button" type="button" hidden aria-expanded="false" aria-controls="measure measure-form">측정 원본·실행 계획 자세히 보기</button>
+
+
+
+      </div>
+
+
+
+    </section>
+
+
+
+    <section class="lab-section" id="history" aria-labelledby="history-disclosure-title" hidden>
+
+
+
+      <details id="history-disclosure" class="optional-panel"><summary id="history-disclosure-title">누적 실험 기록과 그래프 보기<span id="history-count" class="helper">완료된 측정이 여기에 쌓입니다.</span></summary><div class="optional-content">
+
+
+<p class="feature-intent">조건을 바꿔 여러 번 측정한 결과를 나란히 봅니다. 실험 한 번마다 두 평균이 점으로 추가돼요. 같은 위치의 점은 겹칠 수 있습니다.</p>
+
+
+<div class="section-heading"><div>
+
+
+<p class="eyebrow">조건을 바꾸고 결과를 나란히 비교해요</p>
+
+
+<h2 id="history-title">실험 기록</h2>
+
+
+</div></div>
+
+
+
+      <p>같은 CSV에서 ‘서울 찾기’와 ‘부산 찾기’처럼 조건을 바꿔 측정해 보세요. 완료된 실측 결과를 자동으로 기록하고, 각 기록의 판정은 해당 반복 측정값에서 개별 계산합니다.</p>
+
+
+
+      <div class="history-toolbar">
+
+
+<label for="history-group">비교할 CSV와 자료형 설정<select id="history-group" disabled></select></label><button id="history-again" type="button" class="primary">현재 CSV 조건 바꿔 다시 측정 →</button><button id="history-save" type="button" class="secondary" disabled>이 묶음의 기록 CSV 저장 ↓</button><button id="history-clear" type="button" class="text-button" disabled>전체 기록 비우기</button>
+
+
+</div>
+
+
+
+      <p id="history-empty" class="helper">이 묶음에는 완료된 실험 기록이 없어요.</p>
+
+
+
+      <div id="history-chart-panel" class="panel history-chart-panel" hidden>
+
+
+
+        <h3>찾는 행의 비율에 따라 시간이 어떻게 달라졌나요?</h3>
+
+
+
+        <div class="history-toolbar">
+
+
+<label for="history-chart-column">같은 조회 컬럼끼리 보기<select id="history-chart-column"></select></label><button id="history-chart-save" type="button" class="secondary">그래프 SVG 저장 ↓</button>
+
+
+</div>
+
+
+
+        <svg id="history-chart" viewbox="0 0 800 380" aria-label="조회 비율과 두 스캔의 평균 실행 시간 그래프"></svg>
+
+
+
+        <p id="history-chart-note" class="helper"></p>
+
+
+<label for="history-chart-record">상세 결과를 볼 기록<select id="history-chart-record"></select></label><p id="history-chart-detail" role="status"></p>
+
+
+
+        <details><summary>그래프의 점과 세로 막대 읽는 법</summary><p class="helper">점은 각 기록의 평균, 세로 막대는 평균 ± 표본 표준편차(0 아래는 자름)입니다. 신뢰구간이나 우위 판정 경계가 아닙니다. 실행 순서·반복 횟수·PC 부하·캐시도 다를 수 있어요. 점을 잇거나 사이 값을 예측하지 않으며, 그래프만으로 선택도의 효과나 역전 지점을 확정하지 않습니다.</p>
+
+
+
+      </details>
+
+
+</div>
+
+
+
+      <details id="history-table-disclosure"><summary>모든 기록을 표로 보기 · 조건·평균·계산 근거</summary><div id="history-table-wrap" class="record-table-scroll" hidden><table class="record-table history-table">
+
+
+<caption>같은 CSV·자료형 설정의 완료된 측정 기록</caption>
+
+
+<thead><tr>
+
+
+<th scope="col">기록</th>
+
+
+<th scope="col">찾은 조건</th>
+
+
+<th scope="col">조회 컬럼·유형</th>
+
+
+<th scope="col">조회 / 전체 행</th>
+
+
+<th scope="col">조회 비율</th>
+
+
+<th scope="col">반복<br>순차 / 인덱스</th>
+
+
+<th scope="col">순차 평균</th>
+
+
+<th scope="col">인덱스 평균</th>
+
+
+<th scope="col">판정</th>
+
+
+<th scope="col">인덱스 생성 / 크기</th>
+
+
+<th scope="col">계산 근거</th>
+
+
+<th scope="col">관리</th>
+
+
+</tr></thead>
+
+
+<tbody id="history-body"></tbody>
+
+
+</table></div>
+
+
+
+      </details><p id="history-feedback" class="feedback" role="status" aria-live="polite"></p>
+
+
+
+      <p class="helper">조건·조회 컬럼·반복 횟수와 PC 부하·캐시 상태가 달라지면 시간이 달라질 수 있어요. 이 표만으로 차이의 원인을 선택도 하나로 확정하지 않습니다. CSV를 다시 고르면 새 묶음으로 기록하고, 자료형 설정이 바뀐 기록은 별도 묶음으로 보여 줍니다.</p>
+
+
+
+      <p class="helper">기록은 현재 브라우저 메모리에 최근 100개까지 보관합니다. 새로고침하거나 창을 닫으면 사라져요. 필요하면 기록 CSV를 저장하세요. 내려받는 파일에는 원본 파일명·컬럼 제목·조회값을 포함하지 않습니다.</p>
+
+
+
+    </div></details></section>
+
+
+
+    <section class="lab-section sql-tools" id="sql-tools" aria-labelledby="sql-disclosure-title" hidden>
+
+
+
+      <details id="sql-disclosure" class="optional-panel"><summary id="sql-disclosure-title">CSV를 SQL로 변환하거나 쿼리 가져가기</summary><div class="optional-content">
+
+
+<p class="feature-intent">내 PostgreSQL 실습에 쓸 코드를 가져가는 기능이에요. <strong>데이터까지 필요하면 ‘CSV 전체 SQL 저장’</strong>, 조회 코드만 필요하면 ‘현재 쿼리 복사’를 누르세요.</p>
+
+
+<div class="panel sql-export-card">
+
+
+<h3>CSV 전체를 SQL로 변환</h3>
+
+
+<p><strong>테이블 생성 + 모든 행의 INSERT문</strong>이 담긴 파일을 저장합니다. 표본만 저장하지 않습니다. 위의 SQL 저장 설정에서 테이블·컬럼 이름과 자료형을 정할 수 있어요. 기본 컬럼명은 CSV 순서대로 c_1, c_2…입니다.</p>
+
+
+<button type="button" id="sql-data-save" class="primary">CSV 전체 SQL 저장 ↓</button><button type="button" id="sql-export-cancel" class="text-button" disabled>SQL 변환 취소</button><div id="sql-export-progress" class="file-progress" hidden>
+
+
+<label for="sql-export-meter">전체 CSV 변환 진행률</label><progress id="sql-export-meter" max="100" value="0"></progress>
+
+
+</div>
+
+
+<p id="sql-export-feedback" class="feedback" role="status" aria-live="polite"></p>
+
+
+<p class="helper">저장한 scanlab-data.sql을 외부 PostgreSQL에서 실행한 뒤 위의 조회·측정 쿼리를 사용하세요. 기본값인 임시 표는 같은 연결에서만 사용할 수 있고, 일반 표를 선택하면 public 스키마에 계속 보관됩니다. 이름·자료형을 바꿨다면 전체 SQL과 조회 쿼리를 함께 새로 저장하세요.</p>
+
+
+<p class="helper">작은 SQL은 일반 다운로드로 저장하고, 큰 SQL은 Chrome·Edge에서 저장 위치를 골라 나눠 저장합니다. 직접 파일 저장을 지원하지 않는 브라우저에서는 SQL 파일 크기 64MiB까지 일반 다운로드로 제공합니다. SQL에는 선택한 CSV의 실제 값이 들어갑니다. 공유 전 공개·예시 데이터인지 확인하세요.</p>
+
+
+</div>
+
+
+
+    <div class="section-heading"><div>
+
+
+<p class="eyebrow">CSV를 쿼리로 · 측정 전·중·후에 사용해요</p>
+
+
+<h2 id="sql-tools-title">쿼리를 복사하거나 파일로 가져가세요.</h2>
+
+
+</div></div>
+
+
+
+      <details class="sql-settings"><summary>SQL 저장 설정 · 테이블 이름 / 컬럼 이름 / 자료형</summary>
+
+
+
+        <p>내 프로젝트에 쓸 이름과 자료형을 정하세요. 아래 설정은 저장·복사할 SQL에 적용됩니다. 앱에서 측정한 표는 c_1, c_2… 이름과 1단계의 자료형을 사용합니다. ‘데이터 가져오기’ 탭은 앱의 측정 설정을 보여 줍니다.</p>
+
+
+
+        <div class="sql-settings-grid">
+
+
+<label for="sql-table-name">테이블 이름<input id="sql-table-name" type="text" value="scanlab_practice" maxlength="126"></label><label for="sql-table-kind">표 보관 방식<select id="sql-table-kind"><option value="temporary">임시 표 · 연결 종료 시 삭제</option>
+
+
+<option value="permanent">일반 표 · public 스키마에 보관</option></select></label>
+
+
+</div>
+
+
+
+        <div class="sql-toolbar">
+
+
+<button id="sql-use-headers" type="button" class="secondary">CSV 제목을 컬럼명으로 사용</button><button id="sql-settings-reset" type="button" class="text-button">이름 기본값 / 현재 측정 자료형 가져오기</button>
+
+
+</div>
+
+
+
+        <div class="record-table-scroll"><table class="record-table sql-schema-table">
+
+
+<caption>CSV 컬럼 순서와 SQL 저장 설정</caption>
+
+
+<thead><tr>
+
+
+<th scope="col">CSV 원래 제목</th>
+
+
+<th scope="col">SQL 컬럼 이름</th>
+
+
+<th scope="col">SQL 자료형</th>
+
+
+</tr></thead>
+
+
+<tbody id="sql-schema-body"></tbody>
+
+
+</table></div>
+
+
+
+        <p class="helper">이름은 UTF-8 63바이트 이내이며 중복·빈 이름은 사용할 수 없어요. 한글·공백·따옴표는 SQL 식별자로 안전하게 감쌉니다. CSV 제목의 중복·긴 이름은 버튼을 누를 때 정리하므로 결과를 확인하세요. 자료형은 CSV 전체 값과 맞아야 저장할 수 있습니다. 일반 표는 기존 표를 덮어쓰지 않으며 CREATE TABLE에서 오류가 나면 작업을 중단하세요.</p>
+
+
+
+      </details>
+
+
+
+      <p>선택한 CSV 구조와 조회 조건을 PostgreSQL 쿼리로 보여 줍니다. 조회 쿼리는 값을 채워 복사할 수 있는 형태이며 앱 안에서는 같은 조건을 매개변수로 실행합니다. 데이터 가져오기 코드는 앱의 가상 파일 전용입니다. 외부 DB에 데이터를 넣을 때는 아래 CSV 전체 SQL 저장을 사용하세요.</p>
+
+
+
+      <details id="sql-query-disclosure" class="query-disclosure"><summary>조회·측정 쿼리 보기 / 복사</summary><div class="sql-tabs" role="group" aria-label="복사할 쿼리 선택">
+
+
+<button type="button" class="chip active" data-sql-query="table" aria-pressed="true">표 만들기</button><button type="button" class="chip" data-sql-query="import" aria-pressed="false">데이터 가져오기</button><button type="button" class="chip" data-sql-query="index" aria-pressed="false">인덱스 만들기</button><button type="button" class="chip" data-sql-query="select" aria-pressed="false">조회하기</button><button type="button" class="chip" data-sql-query="seq" aria-pressed="false">순차 스캔</button><button type="button" class="chip" data-sql-query="indexScan" aria-pressed="false">인덱스 스캔</button>
+
+
+</div>
+
+
+
+      <label id="sql-follow-label" class="checkbox-label" hidden><input type="checkbox" id="sql-follow" checked>진행 중인 측정 단계 따라보기</label>
+
+
+
+      <h3 id="sql-query-title">표 만들기</h3>
+
+
+<pre id="sql-query-preview" tabindex="0" aria-label="선택한 조회·측정 쿼리"></pre>
+
+
+
+      <div class="sql-toolbar">
+
+
+<button type="button" id="sql-query-copy" class="secondary" disabled>현재 쿼리 복사</button><button type="button" id="sql-query-save" class="secondary" disabled>현재 쿼리 .sql 저장 ↓</button>
+
+
+</div>
+
+
+<p id="sql-query-feedback" class="feedback" role="status"></p>
+
+
+
+      </details>
+
+
+</div></details></section>
+
+
+
+    <footer><b>스캔랩</b><p>선택도만으로 단정하지 않고, 직접 측정하고 설명하는 연습.<br>학습용 예시와 논문의 공개 요약 통계를 사용합니다. 로그인·설치·API 키가 필요하지 않습니다.</p>
+
+
+<a href="./README.md">실행·확인 방법</a></footer>
+
+
+
+  </main>
+
+
+
+  <noscript>스캔랩은 브라우저의 JavaScript가 켜져 있어야 계산할 수 있습니다.</noscript>
+
+
+
+</body>
+
+
+
+</html>
+
