@@ -202,3 +202,12 @@ D < -2SE: 순차 스캔 우위
 공개 배포는 `scan-helper` 폴더 전체를 정적 사이트로 올립니다. JS·MJS는 JavaScript MIME, WASM은 application/wasm으로 제공해야 합니다. 폴더 위치가 달라도 상대 경로로 실행됩니다. 12번 포트폴리오에는 별도 앱 페이지의 링크와 누구를 어떻게 돕는지 한 문장을 대표작 자리에 넣습니다. 동료의 익명 감상은 ZIP의 동료_익명감상.txt와 제출문에 기록했습니다. 공개 배포·포트폴리오 연결은 제출 안내에 별도 항목으로 표시했습니다.
 
 `engine-core.js`는 측정 설정 검증, `engine-worker.mjs`는 CSV 가져오기와 DB 반복 실행, `engine-ui.js`는 측정 진행과 취소, `app.js`는 자동 비교·보고서, `csv-stream.js`는 큰 CSV 나눠 읽기를 담당합니다. `history.js`·`history-ui.js`는 기록 검증·묶음·비교표·기록 파일 저장, `sql-export.js`·`sql-tools.js`는 쿼리 복사와 CSV 전체 SQL 변환을 담당합니다. 논문 공개 통계는 paper-data.js, 동봉 논문은 paper.html에 있습니다.
+
+
+## 공개 배포와 대표작 연결 완료
+12번 사이트 대표작 연결과 공개 앱 배포를 완료했습니다 (2026.10.13).
+- 포트폴리오 대표작: https://12-web-aleph.vercel.app/#work
+- 공개 앱: https://12-web-aleph.vercel.app/scan-helper/
+- 기반 논문: https://12-web-aleph.vercel.app/paper.html
+
+계정·로그인·초대·비밀번호 없이 공개 HTTP 응답과 새로운 앱 탭에서 접속을 확인했습니다. 공개 앱에서 예시 200행 중 서울 66행을 각 방식 10회 측정하고 실제 보고서를 다운로드했습니다. 결과와 대표작 화면은 테스트기록에 보관했습니다. 별도의 시크릿 창 UI는 이번 확인 기록에 포함하지 않았습니다.
